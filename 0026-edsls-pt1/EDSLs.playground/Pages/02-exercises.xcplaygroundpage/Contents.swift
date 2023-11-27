@@ -27,6 +27,11 @@ print(simplify(Expr.mul(0, 1)))
 print(simplify(Expr.add(0, 1)))
 print(simplify(Expr.add(1, 0)))
 
+// Q1-5
+// Enhance `Expr` to allow for any number of variables. The eval implementation will need to change to allow passing values in for all of the variables introduced.
+let expr = Expr.add(.mul(.var("x"), 2), .mul(.var("y"), 6))
+eval(expr, with: ["x": 2, "y": 3])
+print(expr)
 /*:
  2.) Implement infix operators `*` and `+` to work on `Expr` to get rid of the `.add` and `.mul` annotations.
  */
@@ -48,7 +53,7 @@ enum Expr: Equatable {
   case int(Int)
   indirect case add(Expr, Expr)
   indirect case mul(Expr, Expr)
-  case `var`
+  case `var`(String)
 }
 
 extension Expr: ExpressibleByIntegerLiteral {
@@ -57,15 +62,16 @@ extension Expr: ExpressibleByIntegerLiteral {
   }
 }
 
-func eval(_ expr: Expr, with value: Int) -> Int {
+func eval(_ expr: Expr, with values: [String: Int]) -> Int {
   switch expr {
   case let .int(value):
     return value
   case let .add(lhs, rhs):
-    return eval(lhs, with: value) + eval(rhs, with: value)
+    return eval(lhs, with: values) + eval(rhs, with: values)
   case let .mul(lhs, rhs):
-    return eval(lhs, with: value) * eval(rhs, with: value)
-  case .var:
+    return eval(lhs, with: values) * eval(rhs, with: values)
+  case let .var(id):
+    guard let value = values[id] else { fatalError() }
     return value
   }
 }
@@ -78,8 +84,8 @@ func print(_ expr: Expr) -> String {
     return "(\(print(lhs)) + \(print(rhs)))"
   case let .mul(lhs, rhs):
     return "(\(print(lhs)) * \(print(rhs)))"
-  case .var:
-    return "x"
+  case let .var(id):
+    return id
   }
 }
 
